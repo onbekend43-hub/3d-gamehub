@@ -1,0 +1,89 @@
+﻿<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>3D Game Hub — Upgraded</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="neon-bg">
+<div id="loader" class="loader">
+  <div class="logo">3D GAME HUB</div>
+  <div id="progressText">Loading... 0%</div>
+  <div class="bar"><div id="barFill"></div></div>
+  <div class="sub">Medium-poly pack | Neon Cyber UI</div>
+</div>
+
+<header id="mainUI" class="site-header hidden">
+  <div class="brand">
+    <div class="logo-gh">GH</div>
+    <div>
+      <h1>3D Game Hub — Ultra (Style 2)</h1>
+      <p class="subtitle">Low-Poly Realistic • Neon Cyber UI • High Effects</p>
+    </div>
+  </div>
+  <nav class="top-actions">
+    <button id="toggleFull" class="btn">Fullscreen</button>
+    <button id="bests" class="btn">Bestscores</button>
+  </nav>
+</header>
+
+<main id="gallery" class="gallery hidden">
+  <!-- Game cards generated statically -->
+  <article class="card"><div class="card-thumb">Runner</div><h2>Endless Runner</h2><a class="btn" href="runner.html">Speel</a></article>
+  <article class="card"><div class="card-thumb">FPS</div><h2>FPS Shooter</h2><a class="btn" href="fps.html">Speel</a></article>
+  <article class="card"><div class="card-thumb">Driving</div><h2>Driving</h2><a class="btn" href="drive.html">Speel</a></article>
+
+  <article class="card"><div class="card-thumb">Parkour</div><h2>Parkour 3D</h2><a class="btn" href="parkour.html">Speel</a></article>
+  <article class="card"><div class="card-thumb">Zombie</div><h2>Zombie Survival</h2><a class="btn" href="zombie.html">Speel</a></article>
+  <article class="card"><div class="card-thumb">Explorer</div><h2>Open World Explorer</h2><a class="btn" href="explorer.html">Speel</a></article>
+
+  <article class="card"><div class="card-thumb">Drift</div><h2>Drift Car</h2><a class="btn" href="drift.html">Speel</a></article>
+  <article class="card"><div class="card-thumb">Motor</div><h2>Motorcycle Rider</h2><a class="btn" href="motor.html">Speel</a></article>
+  <article class="card"><div class="card-thumb">TPS</div><h2>TPS Shooter</h2><a class="btn" href="tps.html">Speel</a></article>
+
+  <article class="card"><div class="card-thumb">Sandbox</div><h2>Build (Sandbox)</h2><a class="btn" href="sandbox.html">Speel</a></article>
+  <article class="card"><div class="card-thumb">Flappy</div><h2>3D Flappy</h2><a class="btn" href="flappy.html">Speel</a></article>
+</main>
+
+<footer id="footer" class="site-footer hidden"><small>Gemaakt met Three.js — Upgraded pack</small></footer>
+
+<script>
+const assets = [
+  'assets/models/runner.glb',
+  'assets/models/player.glb',
+  'assets/models/car.glb',
+  'assets/models/enemy.glb',
+  'assets/models/tree.glb'
+];
+
+let loaded = 0;
+function updateProgress(){
+  const pct = Math.floor((loaded / assets.length) * 100);
+  document.getElementById('barFill').style.width = pct + '%';
+  document.getElementById('progressText').innerText = 'Loading... ' + pct + '%';
+  if(loaded >= assets.length){
+    setTimeout(()=>{
+      document.getElementById('loader').classList.add('hidden');
+      document.getElementById('mainUI').classList.remove('hidden');
+      document.getElementById('gallery').classList.remove('hidden');
+      document.getElementById('footer').classList.remove('hidden');
+    }, 350);
+  }
+}
+function tryLoadAssets(){
+  if(assets.length===0){ loaded = 1; updateProgress(); return; }
+  assets.forEach((p)=>{
+    fetch(p).then(r=>{ if(r.ok){} }).catch(()=>{}).finally(()=>{ loaded++; updateProgress(); });
+  });
+}
+window.addEventListener('load', ()=>{ tryLoadAssets(); updateProgress(); });
+document.getElementById && document.addEventListener('click', ()=>{ if(window.AudioContext && window.AudioContext.state !== 'running'){ try{ new (window.AudioContext||window.webkitAudioContext)().resume(); }catch(e){} } });
+document.getElementById('toggleFull')?.addEventListener('click', ()=>{
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen().catch(()=>{});
+});
+document.getElementById('bests')?.addEventListener('click', ()=>{ alert('Runner: '+(localStorage.getItem('best_runner')||0)+'\\nFPS: '+(localStorage.getItem('best_fps')||0)); });
+</script>
+</body>
+</html>
