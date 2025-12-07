@@ -1,0 +1,25 @@
+﻿<!doctype html>
+<html lang='nl'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Drift Car</title>
+<link rel='stylesheet' href='css/style.css'>
+</head>
+<body class='neon-bg'>
+<div id='ui' style='position:fixed;left:12px;top:12px;z-index:6;color:#fff'><a class='btn' href='index.html'>← Terug</a></div>
+<script type='module'>
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+/* Drift */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
+const renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+const car = new THREE.Mesh(new THREE.BoxGeometry(2,0.9,4), new THREE.MeshStandardMaterial({color:0xff4444})); car.position.set(0,0,6); scene.add(car);
+for(let i=0;i<30;i++){ const c=new THREE.Mesh(new THREE.ConeGeometry(0.3,0.6,8), new THREE.MeshStandardMaterial({color:0xffbb00})); c.position.set(((Math.random()-0.5)*8),0.3,-(i*20)-40); scene.add(c); }
+let velocity=0,score=0;
+function update(dt, keys){ if(keys['w']) velocity += 18*dt; else velocity -= 6*dt; velocity = Math.max(0, Math.min(80, velocity)); if(keys['a']) car.rotation.y += 1.2*dt; if(keys['d']) car.rotation.y -= 1.2*dt; const forward = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion); car.position.addScaledVector(forward, velocity*dt); }
+function render(){ renderer.render(scene,camera); }
+const engine = new Engine((dt,keys)=>update(dt,keys), ()=>render());
+</script>
+</body>
+</html>

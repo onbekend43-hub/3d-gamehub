@@ -1,0 +1,24 @@
+﻿<!doctype html>
+<html lang='nl'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Motorcycle Rider</title>
+<link rel='stylesheet' href='css/style.css'>
+</head>
+<body class='neon-bg'>
+<div id='ui' style='position:fixed;left:12px;top:12px;z-index:6;color:#fff'><a class='btn' href='index.html'>← Terug</a></div>
+<script type='module'>
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+/* Motorcycle */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
+const renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+const bike = new THREE.Mesh(new THREE.BoxGeometry(1.2,0.8,2), new THREE.MeshStandardMaterial({color:0x0077ff})); bike.position.set(0,0.6,6); scene.add(bike);
+let velocity=0, dist=0;
+function update(dt, keys){ if(keys['w']||keys['ArrowUp']) velocity += 30*dt; else velocity -= 6*dt; velocity = Math.max(0, Math.min(80, velocity)); if(keys['a']) bike.position.x -= 6*dt; if(keys['d']) bike.position.x += 6*dt; dist += velocity*dt; }
+function render(){ renderer.render(scene,camera); }
+const engine = new Engine((dt,keys)=>update(dt,keys), ()=>render());
+</script>
+</body>
+</html>

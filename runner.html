@@ -1,0 +1,79 @@
+﻿<!doctype html>
+<html lang='nl'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Endless Runner</title>
+<link rel='stylesheet' href='css/style.css'>
+</head>
+<body class='neon-bg'>
+<div id='ui' style='position:fixed;left:12px;top:12px;z-index:6;color:#fff'><a class='btn' href='index.html'>← Terug</a></div>
+<script type='module'>
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+/* Runner game (module) */
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/controls/OrbitControls.js";
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
+const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
+renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+window.addEventListener("resize", ()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+
+scene.add(new THREE.AmbientLight(0x888888));
+const dir = new THREE.DirectionalLight(0xffffff,1.0); dir.position.set(8,20,8); scene.add(dir);
+
+// ground
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(12,2000), new THREE.MeshStandardMaterial({color:0x33414a}));
+ground.rotation.x = -Math.PI/2; ground.position.z = -900; scene.add(ground);
+
+// try load gltf runner model (optional)
+let player=null;
+(async()=>{
+  const gl = await loadGLTF('assets/models/runner.glb');
+  if(gl && gl.scene){ player = gl.scene; player.scale.set(1.2,1.2,1.2); player.position.set(0,0,5); scene.add(player); }
+  else {
+    // fallback procedural
+    player = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1,1.6,0.6), new THREE.MeshStandardMaterial({color:0x00aaff}));
+    body.position.y = 1.0; player.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.8,0.8), new THREE.MeshStandardMaterial({color:0xffd19a}));
+    head.position.y = 2.1; player.add(head);
+    scene.add(player);
+  }
+})();
+
+camera.position.set(0,6,12);
+
+let lanes=[-3,0,3], lane=1, vy=0, gravity=-0.04, speed=0.6, spawn=0, score=0, obstacles=[];
+function spawnObs(){ const i=Math.floor(Math.random()*3); const o=new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), new THREE.MeshStandardMaterial({color:0xff5555})); o.position.set(lanes[i],0.7,-120); scene.add(o); obstacles.push(o); }
+function animateRunner(dt){
+  if(player){
+    // simple procedural or blended animation hook (if gltf has animations, we'd trigger them)
+    player.rotation.y = Math.sin(Date.now()*0.002) * 0.02;
+  }
+}
+function update(dt, keys){
+  // controls
+  if(keys['ArrowLeft']){ lane = Math.max(0, lane-1); keys['ArrowLeft']=false; AudioHelper.beep(320,0.03,0.03); }
+  if(keys['ArrowRight']){ lane = Math.min(lanes.length-1, lane+1); keys['ArrowRight']=false; AudioHelper.beep(320,0.03,0.03); }
+  if(keys['ArrowUp'] || keys[' ']){ if(player && player.position.y<=0.01){ vy = 0.9; keys['ArrowUp']=false; keys[' ']=false; AudioHelper.beep(880,0.04,0.06); } }
+  player.position.x += (lanes[lane] - player.position.x) * Math.min(1, 8*dt);
+  vy += gravity; player.position.y += vy; if(player.position.y < 0){ player.position.y = 0; vy = 0; }
+  // obstacles movement & collision
+  for(let i=obstacles.length-1;i>=0;i--){
+    const o=obstacles[i]; o.position.z += speed*80*dt;
+    if(Math.abs(o.position.z - player.position.z) < 1.4 && Math.abs(o.position.x - player.position.x) < 1.2 && player.position.y < 1.0){
+      AudioHelper.beep(220,0.15,0.07);
+      alert("Game over: "+Math.floor(score)); location.reload();
+    }
+    if(o.position.z > 120){ scene.remove(o); obstacles.splice(i,1); score+=10; }
+  }
+  spawn += dt; if(spawn > Math.max(0.45, 1 - score/2000)){ spawnObs(); spawn=0; }
+  animateRunner(dt);
+}
+function render(){
+  renderer.render(scene, camera);
+}
+const eng = new Engine((dt,keys)=>update(dt,keys), ()=>render());
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+﻿<!doctype html>
+<html lang='nl'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>TPS Shooter</title>
+<link rel='stylesheet' href='css/style.css'>
+</head>
+<body class='neon-bg'>
+<div id='ui' style='position:fixed;left:12px;top:12px;z-index:6;color:#fff'><a class='btn' href='index.html'>← Terug</a></div>
+<script type='module'>
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+/* TPS */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
+const renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+const hero = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.6,0.6), new THREE.MeshStandardMaterial({color:0x66ccff})); hero.position.set(0,0.9,0); scene.add(hero);
+let bullets=[], enemies=[], spawn=0;
+function shoot(dir){ const b=new THREE.Mesh(new THREE.SphereGeometry(0.12), new THREE.MeshStandardMaterial({color:0xffaa00})); b.position.copy(hero.position).add(new THREE.Vector3(0,0.9,0)); b.userData={vel:dir.multiplyScalar(45)}; scene.add(b); bullets.push(b); }
+function update(dt, keys){ if(keys['w']) hero.position.z -= 6*dt; if(keys['s']) hero.position.z += 6*dt; if(keys['a']) hero.position.x -= 6*dt; if(keys['d']) hero.position.x += 6*dt; for(let i=bullets.length-1;i>=0;i--){ const b=bullets[i]; b.position.addScaledVector(b.userData.vel, dt); if(b.position.length()>1000){ scene.remove(b); bullets.splice(i,1);} } spawn += dt; if(spawn>1.5){ const e=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.4,0.8), new THREE.MeshStandardMaterial({color:0xff6666})); e.position.set((Math.random()-0.5)*40,0.8,-80); scene.add(e); enemies.push(e); spawn=0; } }
+function render(){ renderer.render(scene,camera); }
+const engine = new Engine((dt,keys)=>update(dt,keys), ()=>render());
+window.addEventListener('click', (e)=>{ if(AudioHelper.ctx && AudioHelper.ctx.state==='suspended') AudioHelper.ctx.resume(); const mouse=new THREE.Vector2((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1); const vec=new THREE.Vector3(mouse.x,mouse.y,0.5).unproject(camera).sub(camera.position).normalize(); shoot(vec); });
+</script>
+</body>
+</html>

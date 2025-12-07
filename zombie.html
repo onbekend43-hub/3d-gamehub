@@ -1,0 +1,29 @@
+﻿<!doctype html>
+<html lang='nl'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Zombie Survival</title>
+<link rel='stylesheet' href='css/style.css'>
+</head>
+<body class='neon-bg'>
+<div id='ui' style='position:fixed;left:12px;top:12px;z-index:6;color:#fff'><a class='btn' href='index.html'>← Terug</a></div>
+<script type='module'>
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+/* Zombie survival */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
+const renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+scene.add(new THREE.AmbientLight(0x888888)); const dir = new THREE.DirectionalLight(0xffffff,1); dir.position.set(10,20,10); scene.add(dir);
+const player = new THREE.Mesh(new THREE.BoxGeometry(1,1.6,0.6), new THREE.MeshStandardMaterial({color:0x55aaff})); player.position.set(0,0.9,0); scene.add(player); camera.position.set(0,6,9); camera.lookAt(player.position);
+let zombies=[], spawn=0, hp=100;
+function spawnZ(){ const z=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.6,0.8), new THREE.MeshStandardMaterial({color:0x8b0000})); z.position.set((Math.random()-0.5)*40,0.8,-80-(Math.random()*40)); scene.add(z); zombies.push(z); }
+function update(dt, keys){
+  spawn+=dt; if(spawn>1.0){ spawnZ(); spawn=0; }
+  for(let i=zombies.length-1;i>=0;i--){ let z=zombies[i]; let dir=new THREE.Vector3().subVectors(player.position,z.position).setY(0).normalize(); z.position.addScaledVector(dir, 1.5*dt*10); if(z.position.distanceTo(player.position)<1.6){ hp-=5; AudioHelper.beep(160,0.08,0.08); scene.remove(z); zombies.splice(i,1); if(hp<=0){ alert('You died'); location.reload(); } } }
+}
+function render(){ renderer.render(scene,camera); }
+const engine = new Engine((dt,keys)=>update(dt,keys), ()=>render());
+</script>
+</body>
+</html>

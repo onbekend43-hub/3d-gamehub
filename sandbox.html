@@ -1,0 +1,26 @@
+﻿<!doctype html>
+<html lang='nl'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Sandbox</title>
+<link rel='stylesheet' href='css/style.css'>
+</head>
+<body class='neon-bg'>
+<div id='ui' style='position:fixed;left:12px;top:12px;z-index:6;color:#fff'><a class='btn' href='index.html'>← Terug</a></div>
+<script type='module'>
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+/* Sandbox */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
+const renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+const grid = new THREE.Group(); scene.add(grid);
+for(let x=-5;x<=5;x++){ for(let z=-5;z<=5;z++){ const g=new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshStandardMaterial({color:0x88cc88})); g.position.set(x,0,z); grid.add(g); } }
+const camTarget = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.8,0.8), new THREE.MeshStandardMaterial({color:0xffaa00})); camTarget.position.set(0,1,0); scene.add(camTarget);
+camera.position.set(0,14,14); camera.lookAt(camTarget.position);
+function update(dt, keys){ if(keys['p']){ const r=new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshStandardMaterial({color:0x444444})); r.position.set(Math.floor(Math.random()*10-5),1, Math.floor(Math.random()*10-5)); scene.add(r); keys['p']=false; } }
+function render(){ renderer.render(scene,camera); }
+const engine = new Engine((dt,keys)=>update(dt,keys), ()=>render());
+</script>
+</body>
+</html>
